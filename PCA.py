@@ -80,25 +80,34 @@ for file_name in os.listdir("My_Faces"):
 #i_vectors = np.transpose(i_vectors)
 #%%
 # Finding Mean Value
-sums = np.zeros(w, dtype = 'uint8')
+sums = np.zeros(w)
 for i in range(h):
      sums = sums + i_vectors[i]
+     print(sums)
+
+# Need to be in unit8 value to be shown     
 mean = np.uint8(sums/h)
 #%%
 # Showing Mean value 
 # Changing to uint8 form to show average faces
 A_face = mean.reshape(192,180)
 cv2.imshow( "Average_Face", A_face );
+
+# Change back to float
+mean_float = np.float(mean)
 #%%
-     # Matrix wiht mean value substracted
-#B = [[0 for x in range(h)] for y in range(w)] 
-#for i in range(h):
-#     B[i] = i_vectors[:,i] - mean
-#B = np.asarray(B)
+     # Matrix with mean value substracted
+B = [[0 for x in range(h)] for y in range(w)] 
+for i in range(h):
+     B[i] = i_vectors[i] - mean_float
+     # Since negative value should be equal to zero in uint8
+#     B[i] = B[i].clip(min=0)
+#     B[i] = np.uint8(B[i])
+     
 #%%
  #Finding covariacne matrix
-#S = (1/(h-1))*np.dot(np.transpose(B),B)
-#S = np.uint8(S)
+S = (1/(h-1))*np.dot(np.transpose(B),B)
+S = np.uint8(S)
 #%%
 # Find eigenvector
 #w, v = LA.eig(S)
