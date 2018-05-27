@@ -3,6 +3,8 @@
 Created on Mon May 21 20:21:28 2018
 
 @author: June
+
+Name: PCA Face Recognition
 """
 import cv2
 import os
