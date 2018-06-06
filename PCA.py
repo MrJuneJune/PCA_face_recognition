@@ -114,18 +114,28 @@ S = (1/(h-1))*np.dot(B_array,np.transpose(B_array))
 w, v = LA.eig(S)
 #%%
 # Calculating eigen_faces
-eigen_faces = np.dot(np.transpose(B_array), v)
-eigen_faces = eigen_faces.clip(min=0)
+eigen_faces_float = np.dot(np.transpose(B_array), v)
+x, y = eigen_faces_float.size
+#%%
+# Make it into unit vector
+eigen_faces_norm = [[0 for x in range(x)] for y in range(6)] 
+magnitude = np.zeros(x)
+# 10 best eigen vectors and check if the egien values are in unit vector value
+for i in range(6):
+    eigen_faces_norm[i] = eigen_faces_float[:,i]
+    for j in range(x):
+        magnitude[j] = eigen_faces_norm[i][j]**2
+    magnitude_sum = np.sqrt(np.sum(magnitude))
+    for j in range(x):
+        eigen_faces_norm[i][j] = eigen_faces_norm[i][j]/magnitude_sum
+    # To check if they are in unit vector form.
+        magnitude[j] = eigen_faces_norm[i][j]**2
+    magnitude_sum = np.sqrt(np.sum(magnitude))
+    print(magnitude_sum)
+#%%
+# So I can transelate into unit8 data type
+eigen_faces = eigen_faces_float.clip(min=0)
 eigen_faces = np.uint8(eigen_faces)
-
-#Normalizing
-#eigen_faces_float = np.float64(eigen_faces)
-## To show images(uint8 data)
-#eigen_faces_uint8 = eigen_faces.clip(min=0)
-#eigen_faces_uint8 = np.uint8(eigen_faces_uint8)
-##%%
-#eigen_faces_eu = eucliean(eigen_faces_float[:,0])
-#eigen_face_norm = eigen_faces_float[:,0] / eigen_faces_eu(axis=0)
 #%%
 # Showing Eigenfaces
 cv2.imshow("faces", eigen_faces[:,0].reshape(height,width))
@@ -147,8 +157,19 @@ test_img_m = np.transpose(np.array(test_img_m))
 # Only going to use first 6 eigen faces to reconstruct my face.
 top_six = np.zeros((size,6))
 weight = np.zeros((6,1))
+magnitude = np.zeros((6,1))
 for i in range(6):
-    weight[i] = np.dot(np.transpose(eigen_faces[:,i]), test_img_m[:,i])
+    weight[i] = np.dot(eigen_faces_norm[i], test_img_m[:,i])
+    magnitude[i] = weight[i]**2
+print(np.sqrt(np.sum(magnitude)))
+#%%
+# Reconstruction.
+recontruction = [[0 for x in range(x)] for y in range(6)] 
+for i in range(6):
+    recontruction[i] = weight[i]*eigen_faces_norm[i]
+    recontruction[i] = recontruction[i].clip(min=0)
+    recontruction[i] = np.uint8(recontruction[i])
+    cv2.imshow("xd", recontruction[i].reshape(height,width))
 #%%
 # Probe Image to recognize
 for i in range(25):
@@ -160,17 +181,16 @@ for i in range(25):
     # Probe weights
     probe_weight = np.zeros((6,1))
     for c in range(6):
-        probe_weight[c] = np.dot(np.transpose(eigen_faces[:,c]), probe_img_m)
+        probe_weight[c] = np.dot(eigen_faces_norm[c], probe_img_m)
     # Comparing weights by using euclidean distance.
-    # Could have used  mahalanobis distance which is better for pattern recognition.
     weight_c = np.zeros((6,1))
     for z in range(6):
-        weight_c[z] = np.sqrt( (weight[z] - probe_weight[z])**2) 
-    weight_c_min = np.min(weight_c)
-    print(weight_c_min)
-    if weight_c_min <= 3923792:
+        weight_c[z] = (weight[z] - probe_weight[z])**2
+    weight_c_min = np.sqrt(np.sum(weight_c))
+    if weight_c_min <= np.sqrt(np.sum(magnitude)):
         print("Yes, Default Face")
     else:
         print("No, it is not Default Face")
-cv2.waitKey(20000)
+#%%
+cv2.waitKey(1000)
 cv2.destroyAllWindows()
