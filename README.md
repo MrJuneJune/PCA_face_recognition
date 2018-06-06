@@ -7,6 +7,7 @@ Short definition: it looks for variables or traits that is more correlated than 
 For example, when we look at anything kind of sporting events, we don't usually consider z-axis of the events. It is because z-axis does not make what we are seeing more believable. In fact, z-axis can make things more hectic, causing motion sickness. This is also reason why 3-D movies are underwhelming to watch.
 
 <img src="https://media.giphy.com/media/lZoPvIJZfEREI/giphy.gif" style="align:center;"/>
+
 In basketball game, spectator can't really see how high the basketball travels.
 
 PCA removes inefficient dimensions and creates more important variable(principal component). This is particularly useful to analyze data with lots of variables  to reduce computational efforts such as stock. For today, I will be using PCA  to create face recognition programs.
@@ -19,6 +20,7 @@ Requirement.
 
 To begin with, I need a folder of Imaging data to test and classify. To do this, I used my webcam to capture images and save them in a folder. 
 
+<pre>
 while(True):
     ret, frame = cap.read()
     cv2.imshow("frame", frame)
@@ -27,6 +29,7 @@ while(True):
         # Region of interest cropped
         roi = frame[refpt[0][1]:refpt[1][1], refpt[0][0]:refpt[1][0]]
         cv2.imshow("roi",roi)
+</pre>
 
 In the code, cc is a defined function that I created to crop the region of interested area. 
 
