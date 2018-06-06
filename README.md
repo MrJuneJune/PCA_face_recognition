@@ -35,6 +35,7 @@ In the code, cc is a defined function that I created to crop the region of inter
 
 After I capture the images, I ravel the image into series of vectors and created a matrix from the vectors. If there is a <bold> X amounts of  M by N  size Images </bold>, it is stored in <bold> X by M*N Matrix (since it is saved as array in each row)</bold>. These image needs to be gray scaled.
 
+<pre>
 i = 0
 h = len([name for name in os.listdir(super_folder)])
 height, width, channels = test_image.shape
@@ -47,10 +48,12 @@ for file_name in os.listdir(super_folder):
      num_faces[i] = img
      i_vectors[i] = np.ravel(img)
      i += 1
+ </pre>
 
 
 From it, I need to find a mean value of the image set to center the data to origin.
 
+<pre>
 -Finding Mean Value
 sums = np.zeros(size)
 for i in range(h):
@@ -63,7 +66,7 @@ mean_float = sums/h
 -Changing to uint8 form to show average faces
 A_face = mean.reshape(height, width)
 cv2.imshow( "Average_Face", A_face );
-
+</pre>
 
 My average faces look something like this.
 
@@ -72,20 +75,21 @@ My average faces look something like this.
 
 Now that I have a mean value, I need to subtract mean value from the data to center the data around the origin <bold>(defined as B)</bold>. Then, covariance matrix of the data is computed. When I was computing this, I intentionally used <bold> B.B^T </bold> since there will be less values to compute <bold> (Keep in mind that B is X by M*N)</bold> so that covariance matrix will be in <bold> X by X </bold> matrix.
 
+<pre>
 -Finding covariance matrix
 S = (1/(h-1))*np.dot(B_array,np.transpose(B_array))
-
+</pre>
 
 From the covariance matrix, I can compute eigen vectors.
 
-
+<pre>
 -Find eigenvector a.k.a PC
 w, v = LA.eig(S)
-
+</pre>
 
 However, these eigenvectors will be eigenvectors of <bold> X by X </bold> matrix instead of <bold> M*N by M*N </bold> matrix. By using matrix properties, we can calculate eigenvector of <bold> M*N by M*N</bold>. Keep in mind that eigen_faces need to be in unit vector forms.
 
-
+<pre>
 -Calculating eigen_faces
 eigen_faces_float = np.dot(np.transpose(B_array), v)
 x, y = eigen_faces_float.size
@@ -111,7 +115,7 @@ eigen_faces = np.uint8(eigen_faces)
 #%%
 -Showing Eigenfaces
 cv2.imshow("faces", eigen_faces[:,0].reshape(height,width))
-
+</pre>
 
 This is what I got for one of the eigenfaces.
 
@@ -121,7 +125,7 @@ This is what I got for one of the eigenfaces.
 
 Now, I have to find weights for different training sets of images which is simple as multiplying transposed eigen faces with test images (with mean substracted). This is basically means that how much of these eigenvectors are need to create that test images. This weight is going to be threshold value to decide what the image is.
  
-
+<pre>
 -Classifying my face.
 -Only going to use first 6 eigen faces to reconstruct my face.
 top_six = np.zeros((size,6))
@@ -131,10 +135,11 @@ for i in range(6):
     magnitude[i] = weight[i]^2
 -Threshold values
 print(np.sqrt(np.sum(magnitude)))
-
+</pre>
 
 I have gather all the information to test if it works. It had 87% chance of getting correct faces (23/25) which is resonable.
 
+<pre>
 -Probe Image to recognize
 for i in range(25):
     # Trying to find threshold value for Image to recognize
@@ -156,6 +161,7 @@ for i in range(25):
         print("Yes, Default Face")
     else:
         print("No, it is not Default Face")
+</pre>
 
 Problem with PCA: PCA will try to reconstruct any data that is given if it was not represented in the data which will give bizarre reconstruction.
 
